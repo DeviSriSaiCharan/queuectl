@@ -1,6 +1,8 @@
 import  { Command } from "commander";
 import { displayBanner } from "./banner.js";
 import { startWorkers } from "../cli/commands/start-workers.js";
+import type { JobDetailsInput } from "../common/types/job-details-input.js";
+import { enqueueJob } from "../cli/commands/enqueue-job.js";
 
 export const program = new Command();
 
@@ -21,4 +23,17 @@ worker
         }
         displayBanner();
         await startWorkers(count);
+    })
+
+
+program
+    .command("enqueue")
+    .arguments("<job>")
+    .action(async (job: string) => {
+        if(!job) {
+            throw new Error("Job details must be provided in JSON format.");
+        }
+
+        const jobDetails: JobDetailsInput = JSON.parse(job);
+        await enqueueJob(jobDetails);
     })
