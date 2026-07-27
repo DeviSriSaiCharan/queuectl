@@ -12,10 +12,10 @@ export class Job {
     @Column({ default: JobStatus.PENDING })
     status: JobStatus;
 
-    @Column()
+    @Column({ default: 0})
     attempts: number;
 
-    @Column()
+    @Column({ default: 3 })
     maxAttempts: number;
 
     @CreateDateColumn()
