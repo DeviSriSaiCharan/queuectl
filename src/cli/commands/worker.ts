@@ -49,7 +49,7 @@ async function pollJobs(): Promise<void> {
   const jobRepo = AppDataSource.getRepository(Job);
 
   const job = await jobRepo.findOne({
-    where: { status: JobStatus.PENDING },
+    where: [{ status: JobStatus.PENDING }, { status: JobStatus.FAILED }],
     order: { createdAt: "ASC" },
   });
 
