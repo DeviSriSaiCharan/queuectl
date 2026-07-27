@@ -5,13 +5,19 @@ import { Job } from "./entities/jobs.entity.js";
 export const AppDataSource = new DataSource({
   type: "better-sqlite3",
   database: "queuectl.db",
-  synchronize: true,
+  synchronize: false,
   logging: false,
   entities: [Job],
 });
+
 
 export async function initializeDatabase(): Promise<void> {
   if (!AppDataSource.isInitialized) {
     await AppDataSource.initialize();
   }
+}
+
+export async function syncDatabase(): Promise<void> {
+  await initializeDatabase();
+  await AppDataSource.synchronize();
 }

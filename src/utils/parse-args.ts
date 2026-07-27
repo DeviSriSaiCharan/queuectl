@@ -14,12 +14,11 @@ const worker = program.command("worker")
 worker
     .command("start")
     .option("-c, --count <number>", "Number of workers to start", "2")
-    .action((options) => {
+    .action(async (options) => {
         const count = parseInt(options.count);
         if(count < 0) {
             throw new Error("Count must be a non-negative integer.");
         }
         displayBanner();
-        console.log(`Starting ${count} worker(s)...`);
-        startWorkers(count);
+        await startWorkers(count);
     })
