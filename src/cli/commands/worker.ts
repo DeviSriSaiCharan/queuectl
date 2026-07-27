@@ -13,21 +13,21 @@ async function processJob(job: Job): Promise<void> {
   await jobRepo.save(job);
 
   try {
-    console.log(`[worker] Running job ${job.id}: ${job.command}`);
+    console.log(`[${workerId}] Running job ${job.id}: ${job.command}`);
 
     await runCommand(job.command);
 
     job.status = JobStatus.COMPLETED;
-    console.log(`[worker] Job ${job.id} completed.`);
+    console.log(`[${workerId}] Job ${job.id} completed.`);
   } catch (err) {
-    console.error(`[worker] Job ${job.id} failed:`, err);
+    console.error(`[${workerId}] Job ${job.id} failed:`, err);
 
     if (job.attempts >= job.maxAttempts) {
       job.status = JobStatus.DEAD;
-      console.warn(`[worker] Job ${job.id} marked as DEAD after ${job.attempts} attempts.`);
+      console.warn(`[${workerId}] Job ${job.id} marked as DEAD after ${job.attempts} attempts.`);
     } else {
       job.status = JobStatus.FAILED;
-      console.warn(`[worker] Job ${job.id} will be retried (attempt ${job.attempts}/${job.maxAttempts}).`);
+      console.warn(`[${workerId}] Job ${job.id} will be retried (attempt ${job.attempts}/${job.maxAttempts}).`);
     }
   }
 
@@ -58,10 +58,12 @@ async function pollJobs(): Promise<void> {
   }
 }
 
+var workerId = process.argv[2] || "worker";
+
 async function main(): Promise<void> {
-  console.log("[worker] Connecting to database...");
+  console.log(`[${workerId}] Connecting to database...`);
   await initializeDatabase();
-  console.log("[worker] Database ready. Starting job poll loop.");
+  console.log(`[${workerId}] Database ready. Starting job poll loop.`);
 
   while (true) {
     await pollJobs();
@@ -70,6 +72,6 @@ async function main(): Promise<void> {
 }
 
 main().catch((err) => {
-  console.error("[worker] Fatal error:", err);
+  console.error(`[${workerId}] Fatal error:`, err);
   process.exit(1);
 });

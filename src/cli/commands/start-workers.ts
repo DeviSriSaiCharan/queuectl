@@ -15,7 +15,7 @@ export async function startWorkers(count: number): Promise<void> {
     for(let i=0 ; i<count; i++) {
         console.log(`Starting worker ${i+1}...`);
 
-        const worker = spawn('node', ['dist/cli/commands/worker.js'], {
+        const worker = spawn('node', ['dist/cli/commands/worker.js', `worker-${i+1}`], {
             stdio: 'inherit',
         });
 
