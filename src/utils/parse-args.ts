@@ -1,5 +1,6 @@
 import  { Command } from "commander";
 import { displayBanner } from "./banner.js";
+import { startWorkers } from "../cli/commands/start-workers.js";
 
 export const program = new Command();
 
@@ -20,4 +21,5 @@ worker
         }
         displayBanner();
         console.log(`Starting ${count} worker(s)...`);
+        startWorkers(count);
     })
