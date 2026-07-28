@@ -2,6 +2,7 @@ import { spawn, type ChildProcessWithoutNullStreams } from 'child_process';
 import { syncDatabase } from '../../db/db.js';
 import { MARK_ALIVE_INTERVAL_MS } from '../../common/constants/constants.js';
 import { checkForHaltedJobs, markJobsAsPending, updateJobStatusToPending } from '../../db/repository/worker.js';
+import { stopWorkers } from './stop-workers.js';
 
 
 export async function startWorkers(count: number): Promise<void> {
@@ -11,6 +12,12 @@ export async function startWorkers(count: number): Promise<void> {
 
     await updateJobStatusToPending();    
 
+
+    process.on('SIGINT', async () => {
+        await stopWorkers();
+        clearInterval(haltedJobsInterval);
+        process.exit(0);
+    });
 
     console.log(`Starting ${count} worker(s)...`);
     for(let i=0 ; i<count; i++) {

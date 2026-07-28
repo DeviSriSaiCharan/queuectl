@@ -3,6 +3,7 @@ import { displayBanner } from "./banner.js";
 import { startWorkers } from "../cli/commands/start-workers.js";
 import type { JobDetailsInput } from "../common/types/job-details-input.js";
 import { enqueueJob } from "../cli/commands/enqueue-job.js";
+import { stopWorkers } from "../cli/commands/stop-workers.js";
 
 export const program = new Command();
 
@@ -25,6 +26,11 @@ worker
         await startWorkers(count);
     })
 
+worker
+    .command("stop")
+    .action(async () => {
+        await stopWorkers();
+    })
 
 program
     .command("enqueue")
