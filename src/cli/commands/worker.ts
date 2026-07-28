@@ -3,7 +3,7 @@ import { initializeDatabase, AppDataSource } from '../../db/db.js';
 import { Job } from '../../db/entities/jobs.entity.js';
 import { JobStatus } from '../../common/enum/job-status.enum.js';
 import { markAsAlive } from '../../db/repository/worker.js';
-import { POLL_INTERVAL_MS, MARK_ALIVE_INTERVAL_MS } from '../../common/constants/constants.js';
+import { POLL_INTERVAL_MS, MARK_ALIVE_INTERVAL_MS, BACKOFF_BASE } from '../../common/constants/constants.js';
 import { registerWorker, deregisterWorker } from '../../utils/workers-registry.js';
 
 
@@ -32,10 +32,13 @@ async function processJob(job: Job): Promise<void> {
 
         if (job.attempts >= job.maxAttempts) {
             job.status = JobStatus.DEAD;
+            job.runAfter = null;
             console.warn(`[${workerId}] Job ${job.id} marked as DEAD after ${job.attempts} attempts.`);
         } else {
+            const delaySeconds = Math.pow(BACKOFF_BASE, job.attempts);
             job.status = JobStatus.FAILED;
-            console.warn(`[${workerId}] Job ${job.id} will be retried (attempt ${job.attempts}/${job.maxAttempts}).`);
+            job.runAfter = new Date(Date.now() + delaySeconds * 1000);
+            console.warn(`[${workerId}] Job ${job.id} will retry in ${delaySeconds}s (attempt ${job.attempts}/${job.maxAttempts}).`);
         }
     } finally {
         jobId = '';
@@ -63,6 +66,7 @@ async function pollJobs(): Promise<void> {
         WHERE id = (
             SELECT id FROM jobs
             WHERE status IN ('${JobStatus.PENDING}', '${JobStatus.FAILED}')
+            AND (runAfter IS NULL OR runAfter <= datetime('now'))
             ORDER BY createdAt ASC
             LIMIT 1
         )

@@ -6,6 +6,7 @@ import { enqueueJob } from "../cli/commands/enqueue-job.js";
 import { stopWorkers } from "../cli/commands/stop-workers.js";
 import { showStatus } from "../cli/commands/status.js";
 import { listJobs } from "../cli/commands/list-jobs.js";
+import { dlqList, dlqRetry } from "../cli/commands/dlq.js";
 
 export const program = new Command();
 
@@ -58,4 +59,20 @@ program
     .option("--json", "Output as JSON", false)
     .action(async (options) => {
         await listJobs(options.state, options.json);
+    })
+
+const dlq = program.command("dlq");
+
+dlq
+    .command("list")
+    .option("--json", "Output as JSON", false)
+    .action(async (options) => {
+        await dlqList(options.json);
+    })
+
+dlq
+    .command("retry")
+    .argument("<id>", "Job ID to re-enqueue")
+    .action(async (id: string) => {
+        await dlqRetry(id);
     })

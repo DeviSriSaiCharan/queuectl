@@ -18,6 +18,9 @@ export class Job {
     @Column({ default: 3 })
     maxAttempts: number;
 
+    @Column({ type: 'datetime', nullable: true, default: null })
+    runAfter: Date | null;
+
     @CreateDateColumn()
     createdAt: Date;
 
