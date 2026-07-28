@@ -7,6 +7,7 @@ import { stopWorkers } from "../cli/commands/stop-workers.js";
 import { showStatus } from "../cli/commands/status.js";
 import { listJobs } from "../cli/commands/list-jobs.js";
 import { dlqList, dlqRetry } from "../cli/commands/dlq.js";
+import { configSet, configGet } from "../cli/commands/config.js";
 
 export const program = new Command();
 
@@ -75,4 +76,20 @@ dlq
     .argument("<id>", "Job ID to re-enqueue")
     .action(async (id: string) => {
         await dlqRetry(id);
+    })
+
+const config = program.command("config");
+
+config
+    .command("set")
+    .arguments("<key> <value>")
+    .action((key: string, value: string) => {
+        configSet(key, value);
+    })
+
+config
+    .command("get")
+    .arguments("<key>")
+    .action((key: string) => {
+        configGet(key);
     })
