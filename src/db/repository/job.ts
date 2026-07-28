@@ -32,3 +32,9 @@ export async function getQueueStatus(): Promise<QueueStatus['counts']> {
 
     return counts;
 }
+
+export async function getJobsByStatus(status: JobStatus): Promise<Job[]> {
+    const jobRepo = AppDataSource.getRepository(Job);
+    return jobRepo.find({ where: { status }, order: { createdAt: 'ASC' } });
+}
+

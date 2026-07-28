@@ -5,6 +5,7 @@ import type { JobDetailsInput } from "../common/types/job-details-input.js";
 import { enqueueJob } from "../cli/commands/enqueue-job.js";
 import { stopWorkers } from "../cli/commands/stop-workers.js";
 import { showStatus } from "../cli/commands/status.js";
+import { listJobs } from "../cli/commands/list-jobs.js";
 
 export const program = new Command();
 
@@ -49,4 +50,12 @@ program
     .command("status")
     .action(async () => {
         await showStatus();
+    })
+
+program
+    .command("list")
+    .requiredOption("--state <state>", "Job state to filter by (pending, processing, completed, failed, dead)")
+    .option("--json", "Output as JSON", false)
+    .action(async (options) => {
+        await listJobs(options.state, options.json);
     })
