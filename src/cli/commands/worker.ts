@@ -2,11 +2,15 @@ import { exec } from "child_process";
 import { initializeDatabase, AppDataSource } from "../../db/db.js";
 import { Job } from "../../db/entities/jobs.entity.js";
 import { JobStatus } from "../../common/enum/job-status.enum.js";
+import { markAsAlive } from "../../db/repository/worker.js";
+import { POLL_INTERVAL_MS, MARK_ALIVE_INTERVAL_MS } from "../../common/constants/constants.js";
 
-const POLL_INTERVAL_MS = 2000;
+
+let jobId = '';
 
 async function processJob(job: Job): Promise<void> {
   const jobRepo = AppDataSource.getRepository(Job);
+  jobId = job.id;
 
   try {
     console.log(`[${workerId}] Running job ${job.id}: ${job.command}`);
@@ -25,9 +29,10 @@ async function processJob(job: Job): Promise<void> {
       job.status = JobStatus.FAILED;
       console.warn(`[${workerId}] Job ${job.id} will be retried (attempt ${job.attempts}/${job.maxAttempts}).`);
     }
+  } finally {
+    jobId = '';
+    await jobRepo.save(job);
   }
-
-  await jobRepo.save(job);
 }
 
 function runCommand(command: string): Promise<void> {
@@ -77,4 +82,22 @@ async function main(): Promise<void> {
 main().catch((err) => {
   console.error(`[${workerId}] Fatal error:`, err);
   process.exit(1);
+});
+
+
+const markAliveInterval = setInterval(async () => {
+  await markAsAlive(jobId);
+}, MARK_ALIVE_INTERVAL_MS);
+
+process.on("SIGINT", () => {
+  console.log(`[${workerId}] Received SIGINT. Exiting...`);
+  clearInterval(markAliveInterval);
+  process.exit(0);
+});
+
+
+process.on("SIGTERM", () => {
+  console.log(`[${workerId}] Received SIGTERM. Exiting...`);
+  clearInterval(markAliveInterval);
+  process.exit(0);
 });
