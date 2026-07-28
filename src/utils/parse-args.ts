@@ -4,6 +4,7 @@ import { startWorkers } from "../cli/commands/start-workers.js";
 import type { JobDetailsInput } from "../common/types/job-details-input.js";
 import { enqueueJob } from "../cli/commands/enqueue-job.js";
 import { stopWorkers } from "../cli/commands/stop-workers.js";
+import { showStatus } from "../cli/commands/status.js";
 
 export const program = new Command();
 
@@ -42,4 +43,10 @@ program
 
         const jobDetails: JobDetailsInput = JSON.parse(job);
         await enqueueJob(jobDetails);
+    })
+
+program
+    .command("status")
+    .action(async () => {
+        await showStatus();
     })
