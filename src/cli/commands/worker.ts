@@ -8,10 +8,6 @@ const POLL_INTERVAL_MS = 2000;
 async function processJob(job: Job): Promise<void> {
   const jobRepo = AppDataSource.getRepository(Job);
 
-  job.status = JobStatus.PROCESSING;
-  job.attempts += 1;
-  await jobRepo.save(job);
-
   try {
     console.log(`[${workerId}] Running job ${job.id}: ${job.command}`);
 
@@ -48,17 +44,24 @@ function runCommand(command: string): Promise<void> {
 async function pollJobs(): Promise<void> {
   const jobRepo = AppDataSource.getRepository(Job);
 
-  const job = await jobRepo.findOne({
-    where: [{ status: JobStatus.PENDING }, { status: JobStatus.FAILED }],
-    order: { createdAt: "ASC" },
-  });
+ const job = await jobRepo.query(`
+    UPDATE jobs
+    SET status = '${JobStatus.PROCESSING}', attempts = attempts + 1
+    WHERE id = (
+      SELECT id FROM jobs
+      WHERE status IN ('${JobStatus.PENDING}', '${JobStatus.FAILED}')
+      ORDER BY createdAt ASC
+      LIMIT 1
+    )
+    RETURNING *;
+  `)
 
-  if (job) {
-    await processJob(job);
+  if (job.length > 0) {
+    await processJob(job[0]);
   }
 }
 
-var workerId = process.argv[2] || "worker";
+var workerId = process.argv[2] || "worker-?";
 
 async function main(): Promise<void> {
   console.log(`[${workerId}] Connecting to database...`);
