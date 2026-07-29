@@ -1,4 +1,4 @@
-Demo Link: https://drive.google.com/file/d/1bX9chR7W4H7oyTcJyC5OjB7dc03DqMDa/view?usp=sharing
+Demo Link: https://drive.google.com/file/d/1TouTyHPDklJ9XYR13USgjyB31lJhA6ZC/view?usp=sharing
 
 <div align="center">
 
@@ -9,6 +9,47 @@ Demo Link: https://drive.google.com/file/d/1bX9chR7W4H7oyTcJyC5OjB7dc03DqMDa/vie
 A simple job queue CLI for Node.js. Enqueue shell commands, run workers to process them, and manage failures — all from your terminal.
 
 </div>
+
+---
+
+## Project Structure
+
+```
+src/
+├── cli/
+│   ├── index.ts                  # Entry point
+│   └── commands/
+│       ├── worker.ts             # Worker process — polls and runs jobs
+│       ├── start-workers.ts      # Spawns worker processes
+│       ├── stop-workers.ts       # Gracefully stops all workers
+│       ├── enqueue-job.ts        # Adds a job to the queue
+│       ├── list-jobs.ts          # Lists jobs by state
+│       ├── status.ts             # Shows queue summary
+│       ├── dlq.ts                # DLQ list and retry
+│       └── config.ts             # Config get/set
+├── common/
+│   ├── constants/
+│   │   └── constants.ts          # POLL_INTERVAL_MS, BACKOFF_BASE, etc.
+│   ├── enum/
+│   │   └── job-status.enum.ts    # PENDING, PROCESSING, COMPLETED, FAILED, DEAD
+│   └── types/
+│       ├── job-details-input.ts
+│       ├── queue-status.ts
+│       └── worker-entry.ts
+├── db/
+│   ├── db.ts                     # TypeORM connection + sync
+│   ├── entities/
+│   │   └── jobs.entity.ts        # Job table schema
+│   └── repository/
+│       ├── job.ts                # Job queries (status counts, list by state)
+│       ├── worker.ts             # Heartbeat + halted job recovery
+│       └── dlq.ts                # Dead job fetch + retry
+└── utils/
+    ├── banner.ts                 # ASCII banner
+    ├── parse-args.ts             # CLI command routing (Commander.js)
+    ├── config.ts                 # Read/write ~/.queuectl/config.json
+    └── workers-registry.ts      # Read/write ~/.queuectl/workers.json
+```
 
 ---
 
