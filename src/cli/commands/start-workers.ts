@@ -20,17 +20,28 @@ export async function startWorkers(count: number): Promise<void> {
     });
 
     console.log(`Starting ${count} worker(s)...`);
+    let liveWorkers = 0;
+
     for(let i=0 ; i<count; i++) {
         
         const worker = spawn('node', ['dist/cli/commands/worker.js', `worker-${i+1}`], {
             stdio: 'inherit',
         });
 
-
+        liveWorkers++;
         console.log(`Starting worker ${i+1} with PID ${worker.pid}...`);
 
         worker.on('error', (err) => {
             console.error(`Failed to start worker ${i+1}: ${err}`);
+        });
+
+        worker.on('exit', (code, signal) => {
+            console.log(`Worker ${i+1} exited with code ${code} and signal ${signal}`);
+            liveWorkers--;
+            if (liveWorkers === 0) {
+                clearInterval(haltedJobsInterval);
+                process.exit(0);
+            }
         });
     }
 
