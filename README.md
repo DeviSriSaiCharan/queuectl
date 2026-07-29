@@ -1,6 +1,6 @@
 <div align="center">
 
-<video src="https://drive.google.com/uc?export=download&id=1rhMTRCqZyB1Fq3fRbfJGnuIYD-2nPAtf" autoplay loop muted playsinline width="100%"></video>
+<video src="assets/demo.mp4" autoplay loop muted playsinline width="100%"></video>
 
 # QueueCTL
 
