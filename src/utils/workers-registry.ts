@@ -23,7 +23,7 @@ function writeRegistry(entries: WorkerEntry[]): void {
 
 /** Called by a worker process on startup to register itself. */
 export function registerWorker(entry: WorkerEntry): void {
-    const entries = readRegistry().filter(e => e.workerId !== entry.workerId);
+    const entries = readRegistry();
     entries.push(entry);
     writeRegistry(entries);
 }
